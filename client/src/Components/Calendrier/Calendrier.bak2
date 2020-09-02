@@ -1,0 +1,177 @@
+import React, { Component } from "react";
+
+//Calendar
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
+import googleCalendar from '@fullcalendar/google-calendar'
+import { OverlayTrigger, Button, Tooltip } from 'react-bootstrap'
+import moment from "moment";
+import axios from 'axios';
+
+
+import "react-big-calendar/lib/sass/styles.scss";
+import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
+
+import { BeatLoader } from 'react-spinners';
+
+import '@fullcalendar/core/main.css';
+import '@fullcalendar/daygrid/main.css';
+
+moment.locale("fr");
+
+
+export default class Calendrier extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      cal_events: [],
+      selected_event: null,
+      popoverOpen: false,
+      isLoading: true
+    }
+  }
+  componentDidMount = async () => {
+    this.loadEvents()
+
+  }
+  toggle = (e) => {
+    this.setState({ selected_event: e })
+    this.popOver(!this.state.popoverOpen)
+
+  }
+  toggle = () => {
+    this.setState({
+      popoverOpen: !this.state.popoverOpen
+    });
+  }
+  renderTooltip = () => {
+    return (
+      <Tooltip id="button-tooltip">
+        Simple tooltip
+    </Tooltip>
+    )
+  };
+  onEventDrop = (e) => {
+    let prevDate = e.event
+    let id = prevDate.id
+    let prevStart = prevDate.start
+    let prevEnd = prevDate.end
+    let newStart = e.start
+    let newEnd = e.end
+
+    console.log(e)
+  }
+  handleDateClick = (arg) => {
+    console.log(arg)
+  }
+  moveEvent = ({ event, start, end }) => {
+    const { cal_events } = this.state;
+
+    const idx = cal_events.indexOf(event);
+    const updatedEvent = { ...event, start, end };
+
+    const nextEvents = [...cal_events];
+    nextEvents.splice(idx, 1, updatedEvent);
+
+    this.setState({
+      cal_events: nextEvents
+    });
+  }
+  resizeEvent = ({ event, start, end }) => {
+    const { cal_events } = this.state;
+
+    const nextEvents = cal_events.map(existingEvent => {
+      return existingEvent.id === event.id
+        ? { ...existingEvent, start, end }
+        : existingEvent;
+    });
+
+    this.setState({
+      cal_events: nextEvents
+    });
+  };
+  loadEvents = () => {
+    this.setState({ isLoading: true })
+    axios.get(process.env.REACT_APP_API_URL + '/events')
+      .then(response => {
+
+        let appointments = response.data;
+
+        for (let i = 0; i < appointments.length; i++) {
+          console.log(appointments[i])
+          if (appointments[i].start.date != null) {
+            appointments[i].start = moment.utc(appointments[i].start.date).toDate();
+            appointments[i].end = moment.utc(appointments[i].end.date).toDate();
+            appointments[i].isAllDay = true
+          }
+          else {
+            appointments[i].start = moment.utc(appointments[i].start.dateTime).toDate();
+            appointments[i].end = moment.utc(appointments[i].end.dateTime).toDate();
+            appointments[i].isAllDay = false
+          }
+
+          appointments[i].resourceId = appointments[i].id
+          appointments[i].title = appointments[i].summary;
+
+        }
+
+        this.setState({
+          cal_events: appointments,
+          isLoading: false
+        })
+
+
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  getEvent = (e) => {
+    window.location = 'event/' + e.id
+  }
+  createEvent = ({ event, start, end }) => {
+    console.log(event)
+    // axios.post(process.env.REACT_APP_API_URL + '/events')
+    //   .then(response => {
+    //     console.log(response)
+    //     this.loadEvents()
+
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error);
+    //   });
+  }
+  render() {
+
+    const { cal_events, selected_event, isLoading } = this.state
+    return (
+
+      < div className="calendar" >
+        <h1>Calendrier</h1>
+        {
+          isLoading ?
+            <BeatLoader
+              color={'#e17b42'}
+              loading={isLoading}
+            />
+            :
+            <FullCalendar
+              defaultView="dayGridMonth"
+              events={cal_events}
+              editable={true}
+              eventStartEditable={true}
+              eventResizableFromStart={true}
+              eventDurationEditable={true}
+              
+              droppable={true}
+              
+              dateClick={this.handleDateClick}
+              plugins={[dayGridPlugin, interactionPlugin]}
+            />
+        }
+
+      </div >
+    )
+  }
+}

@@ -236,6 +236,28 @@ body {
     }
   }
 }
+.task-popup {
+  background-color: white;
+  position: absolute;
+  top: 0;
+  left: calc(50% - 300px);
+  padding:1rem;
+  width: 600px;
+  height: 300px;
+  z-index: 100;
+  border: 1px solid black;
+  border-radius: 25px;
+  .task-popup-form{
+    label {
+      display: block;
+      width: 100%;
+      .title{
+        display: inline-block;
+        width: 50%;
+      }
+    }
+  }
+}
 .form-group {
   &.same-line {
     display: flex;

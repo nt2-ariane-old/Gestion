@@ -58,7 +58,7 @@ export default class SlackUsersList extends Component {
                                 }
                             </ul>
                         </div>
-                        :cd
+                        :
                         <p>Veuillez vous connecter à <a href='/slack'>Slack</a></p>
                         :
                         ''

@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 
 import Timeline from 'react-calendar-timeline'
+import TaskPopup from './Tasks/TaskPopup'
 import 'react-calendar-timeline/lib/Timeline.css'
 import moment from 'moment'
 
@@ -12,6 +13,8 @@ export default class ProjetsTimeline extends Component {
         this.state = {
             groups: [{ _id: 1 }],
             items: [],
+            addMode: false,
+            addInfo: null,
         }
     }
     componentDidMount = () => {
@@ -36,13 +39,7 @@ export default class ProjetsTimeline extends Component {
     }
 
     onCanvasDoubleClick = async (groupId, time, e) => {
-        let date = new Date(time);
-        date.setHours(date.getHours() + 1);
-
-        apis
-            .insertTask({ group: groupId, title: 'item 1', start_time: time, end_time: date.getTime() })
-            .then((res) => this.loadComponent())
-
+        this.setState({ addMode: !this.state.addMode, addInfo: { groupId, time } })
     }
     onItemResize = async (itemId, time, edge) => {
         console.log(time)
@@ -74,59 +71,12 @@ export default class ProjetsTimeline extends Component {
             .catch((err) => console.log(errorHandler(err)))
     }
     render() {
-        const { groups, items } = this.state
-
-        // let items = []
-        // let groups = []
-        // if (this.state.groups) {
-
-        // const groups = [{ _id: 1, title: 'group 1' }, { _id: 2, title: 'group 2' }]
-        // const items = [
-        //     {
-        //         _id: 1,
-        //         group: groups[0]._id,
-        //         title: 'item 1',
-        //         start_time: moment(),
-        //         end_time: moment().add(1, 'hour')
-        //     },
-        //     {
-        //         _id: 2,
-        //         group: groups[0]._id,
-        //         title: 'item 2',
-        //         start_time: moment().add(-0.5, 'hour'),
-        //         end_time: moment().add(0.5, 'hour')
-        //     },
-        //     {
-        //         _id: 3,
-        //         group: groups[0]._id,
-        //         title: 'item 3',
-        //         start_time: moment().add(2, 'hour'),
-        //         end_time: moment().add(3, 'hour')
-        //     }
-        // ]
-        // }
+        const { groups, items, addInfo, addMode } = this.state
+        
         return (
             <div>
                 {
                     groups &&
-                    // <Timeline groups={groups}
-                    //     items={items}
-                    //     // keys={
-                    //     //     {
-                    //     //         groupIdKey: '_id',
-                    //     //         itemIdKey: 'id',
-                    //     //         groupTitleKey: 'title',
-                    //     //         itemTitleKey: 'title',
-                    //     //         itemTimeStartKey: 'start_time',
-                    //     //         itemTimeEndKey: 'end_time'
-
-                    //     //     }
-                    //     // }
-
-                    //     defaultTimeStart={moment().add(-12, 'hour')}
-                    //     defaultTimeEnd={moment().add(12, 'hour')}
-                    //     onCanvasDoubleClick={this.onCanvasDoubleClick}
-                    // />
 
                     <Timeline
                         groups={groups}
@@ -144,13 +94,17 @@ export default class ProjetsTimeline extends Component {
                             itemTimeEndKey: 'end_time',
                         }}
 
-                        defaultTimeStart={moment().add(-12, 'hour')}
-                        defaultTimeEnd={moment().add(12, 'hour')}
+                        defaultTimeStart={moment().add(-2, 'month')}
+                        defaultTimeEnd={moment().add(2, 'month')}
 
                         onCanvasDoubleClick={this.onCanvasDoubleClick}
                         onItemResize={this.onItemResize}
                         onItemMove={this.onItemMove}
                     />
+                }
+                {
+                    addMode &&
+                    <TaskPopup groups={groups} addInfo={addInfo} />
                 }
             </div >
         )

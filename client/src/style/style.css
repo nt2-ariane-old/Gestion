@@ -11033,6 +11033,29 @@ body {
   color: var(--text03);
 }
 
+.task-popup {
+  background-color: white;
+  position: absolute;
+  top: 0;
+  left: calc(50% - 300px);
+  padding: 1rem;
+  width: 600px;
+  height: 300px;
+  z-index: 100;
+  border: 1px solid black;
+  border-radius: 25px;
+}
+
+.task-popup .task-popup-form label {
+  display: block;
+  width: 100%;
+}
+
+.task-popup .task-popup-form label .title {
+  display: inline-block;
+  width: 50%;
+}
+
 .form-group.same-line {
   display: -webkit-box;
   display: -ms-flexbox;
